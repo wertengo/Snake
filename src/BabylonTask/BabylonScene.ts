@@ -7,24 +7,43 @@ import {
     Vector3,
     HemisphericLight,
     MeshBuilder,
-    CannonJSPlugin,
+    PhysicsAggregate,
+    PhysicsShapeType
+    // CannonJSPlugin,
 } from "@babylonjs/core";
 import { Snake } from "./Snake";
-import * as CANNON from "cannon";
+// import * as CANNON from "cannon";
 // import { PhysicsEngine, HavokPlugin } from "@babylonjs/core/Physics";
+import HavokPhysics from '@babylonjs/havok';
+import { HavokPlugin } from '@babylonjs/core/Physics/v2/Plugins/havokPlugin';
 
 export class BasicScene {
 
-    scene: Scene;
+    scene!: Scene;
     engine: Engine;
 
     constructor(private canvas: HTMLCanvasElement) {
         this.engine = new Engine(this.canvas, true);
+        this.initializeScene().then(() => {
+            this.engine.runRenderLoop(() => {
+                this.scene.render();
+            });
+        }).catch(error => {
+            console.error("Error initializing scene:", error);
+        });
+        // this.scene = this.CreateScene();
+        // this.enablePhysic();
+        // this.CreateImpostor();
+        // // const snake = new Snake(this.scene);
+        // this.engine.runRenderLoop(() => {
+        //     this.scene.render();
+        // })
+    }
+
+    async initializeScene(): Promise<void> {
         this.scene = this.CreateScene();
-        const snake = new Snake(this.scene);
-        this.engine.runRenderLoop(() => {
-            this.scene.render();
-        })
+        await this.enablePhysic();
+        this.CreateImpostor();
     }
 
     CreateScene(): Scene {
@@ -42,34 +61,37 @@ export class BasicScene {
 
         hemiLight.intensity = 0.5;
 
-        scene.enablePhysics(new Vector3(0, -9.81, 0), new CannonJSPlugin(true, 10, CANNON));
+        // scene.enablePhysics(new Vector3(0, -9.81, 0), new CannonJSPlugin(true, 10, CANNON));
         // scene.enablePhysics(new Vector3(0, -9.81, 0), new HavokPlugin());
 
+
+        // scene.enablePhysics(new Vector3(0, -9.81, 0), new CannonJSPlugin(true, 10, CANNON));
+
+        return scene;
+    }
+
+    async enablePhysic(): Promise<void> {
+        const havok = await HavokPhysics();
+        this.scene.enablePhysics(
+            new Vector3(0, -9.81, 0),
+            new HavokPlugin(false, havok)
+        );
+    }
+
+    CreateImpostor(): void {
         const ground = MeshBuilder.CreateGround("ground",
             {
                 width: 20,
                 height: 20
 
             }, this.scene);
-        ground.physicsImpostor = new PhysicsImpostor(
-            ground,
-            PhysicsImpostor.BoxImpostor,
-            {
-                mass: 0
-            }, scene);
 
-        // const snake = new Snake(this.scene);
+        // const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2, segments: 32 }, this.scene);
+        // sphere.position.y = 4;
 
-        // const ball = MeshBuilder.CreateSphere("ball",{
-        //     diameter: 1
-        // },this.scene);
-
-        // ball.position = new Vector3(0, 1, 0);
-        // ball.position.x = 1;
-
-        // scene.enablePhysics(new Vector3(0, -9.81, 0), new CannonJSPlugin(true, 10, CANNON));
-
-        return scene;
+        // const sphereAggregate = new PhysicsAggregate(sphere, PhysicsShapeType.SPHERE, { mass: 1, restitution: 0.75 }, this.scene);
+        const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this.scene);
+        const snake = new Snake(this.scene);
     }
 
 }

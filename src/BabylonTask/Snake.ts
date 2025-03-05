@@ -16,7 +16,9 @@ import {
     MeshBuilder,
     PhysicsImpostor,
     Vector3,
-    PhysicsJoint
+    PhysicsJoint,
+    PhysicsAggregate,
+    PhysicsShapeType
 } from "@babylonjs/core";
 
 export class Snake {
@@ -65,29 +67,31 @@ export class Snake {
         const distanceMultiplier = 3
         for (let i = 0; i < 4; i++) {
             const box = MeshBuilder.CreateBox(`box${i}`, { size: this.boxSize }, this.scene);
-            box.position.y = this.boxSize / 2;
+            // box.position.y = this.boxSize / 2;
+            box.position.y = 4;
             box.position.z = i * this.boxSize * 2 * distanceMultiplier;
-            box.physicsImpostor = new PhysicsImpostor(
-                box, 
-                PhysicsImpostor.BoxImpostor, 
-                { 
-                    mass: 10 
-                }, this.scene);
+            // box.physicsImpostor = new PhysicsImpostor(
+            //     box, 
+            //     PhysicsImpostor.BoxImpostor, 
+            //     { 
+            //         mass: 10 
+            //     }, this.scene);
+            const groundAggregate = new PhysicsAggregate(box, PhysicsShapeType.BOX, { mass: 10 }, this.scene);
     
             this.snakeParts.push(box);
     
-            if (i > 0) {
-                const previousPart = this.snakeParts[i - 1];
+            // if (i > 0) {
+            //     const previousPart = this.snakeParts[i - 1];
                 
-                // Создаем Ball-and-Socket Joint
-                const joint = new PhysicsJoint(PhysicsJoint.BallAndSocketJoint, {
-                    mainPivot: new Vector3(0, 0, (this.boxSize * distanceMultiplier) / 2), // Точка соединения на предыдущем объекте
-                    connectedPivot: new Vector3(0, 0, (-this.boxSize * distanceMultiplier) / 2), // Точка соединения на текущем объекте
-                });
+            //     // Создаем Ball-and-Socket Joint
+            //     const joint = new PhysicsJoint(PhysicsJoint.BallAndSocketJoint, {
+            //         mainPivot: new Vector3(0, 0, (this.boxSize * distanceMultiplier) / 2), // Точка соединения на предыдущем объекте
+            //         connectedPivot: new Vector3(0, 0, (-this.boxSize * distanceMultiplier) / 2), // Точка соединения на текущем объекте
+            //     });
     
-                // Применяем соединение к объектам
-                previousPart.physicsImpostor?.addJoint(box.physicsImpostor, joint);
-            }
+            //     // Применяем соединение к объектам
+            //     previousPart.physicsImpostor?.addJoint(box.physicsImpostor, joint);
+            // }
         }
     }
 
