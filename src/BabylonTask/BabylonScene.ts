@@ -60,6 +60,11 @@ export class BasicScene {
             new Vector3(0, -9.81, 0),
             new HavokPlugin(false, havok)
         );
+
+        const physicsEngine = this.scene.getPhysicsEngine();
+        if (physicsEngine) {
+            physicsEngine.setTimeStep(1 / 60); 
+        }
     }
 
     CreateImpostor(): void {
