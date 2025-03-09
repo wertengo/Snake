@@ -11,7 +11,10 @@ import {
     PhysicsConstraint,
     PointerDragBehavior,
     Quaternion,
-    PhysicsConstraintType
+    PhysicsConstraintType,
+    StandardMaterial,
+    Color3,
+    Observable
 } from "@babylonjs/core";
 
 export class Snake {
@@ -20,6 +23,10 @@ export class Snake {
     private physicsAggregates: PhysicsAggregate[] = [];
     private boxSize: number;
     private meshCounter = 0;
+    private selectedMesh: Mesh | null = null;
+
+    public onMeshSelectedObservable: Observable<string> = new Observable<string>();
+    public lastSelectedMeshId: string | null = null;
 
     constructor(scene: Scene, boxSize = 0.5) {
         this.scene = scene;
@@ -46,9 +53,14 @@ export class Snake {
             dragBehavior.useObjectOrientationForDragging = false;
 
             dragBehavior.onDragStartObservable.add(() => {
+                this.selectedMesh = box;
+                this.lastSelectedMeshId = box.metadata.id;
+
                 console.log(`Dragging started for box ${box.metadata.id}`);
                 boxAggregate.body.disablePreStep = true;
+                this.onMeshSelectedObservable.notifyObservers(box.metadata.id);
                 boxAggregate.body.setMassProperties({ mass: 1 });
+                
 
                 // boxAggregate.body.setLinearVelocity(Vector3.Zero());
                 // boxAggregate.body.setAngularVelocity(Vector3.Zero());
@@ -136,6 +148,22 @@ export class Snake {
 
             this.snakeParts.push(box);
             this.physicsAggregates.push(boxAggregate);
+        }
+    }
+
+    // public changeMaterial(color: string) {
+    //     if (this.selectedMesh) {
+    //         const material = new StandardMaterial("material", this.scene);
+    //         material.diffuseColor = Color3.FromHexString(color);
+    //         this.selectedMesh.material = material;
+    //     }
+    // }
+    public changeMaterial(meshId: string, color: string) {
+        const mesh = this.snakeParts.find((m) => m.metadata.id === meshId);
+        if (mesh) {
+            const material = new StandardMaterial("material", this.scene);
+            material.diffuseColor = Color3.FromHexString(color);
+            mesh.material = material;
         }
     }
 
