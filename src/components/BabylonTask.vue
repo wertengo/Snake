@@ -56,10 +56,13 @@ export default defineComponent({
       if (canvas.value) {
         basicScene = new BasicScene(canvas.value);
 
-        // Подписываемся на событие выбора кубика
-        basicScene.snake.onMeshSelectedObservable.add((id: string) => {
-          emit('mesh-selected', id);
-        });
+        if (basicScene?.snake?.onMeshSelectedObservable) {
+      basicScene.snake.onMeshSelectedObservable.add((id: string) => {
+        emit('mesh-selected', id);
+      });
+    } else {
+      console.error('Snake or onMeshSelectedObservable is not defined');
+    }
       }
     });
 

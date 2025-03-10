@@ -22,15 +22,16 @@ export class Snake {
     private snakeParts: Mesh[] = [];
     private physicsAggregates: PhysicsAggregate[] = [];
     private boxSize: number;
-    private meshCounter = 0;
+    private meshCounter = 1;
     private selectedMesh: Mesh | null = null;
 
-    public onMeshSelectedObservable: Observable<string> = new Observable<string>();
+    public onMeshSelectedObservable: Observable<string>;
     public lastSelectedMeshId: string | null = null;
 
     constructor(scene: Scene, boxSize = 0.5) {
         this.scene = scene;
         this.boxSize = boxSize;
+        this.onMeshSelectedObservable = new Observable<string>();
         this.createSnake();
     }
 
